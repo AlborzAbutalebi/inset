@@ -1,5 +1,4 @@
 import AppKit
-import SwiftUI
 
 @main
 enum Main {
@@ -9,26 +8,28 @@ enum Main {
             SelfTest.run(outputDirectory: URL(fileURLWithPath: dir, isDirectory: true))
             return
         }
-        InsetApp.main()
-    }
-}
-
-struct InsetApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
-
-    var body: some Scene {
-        MenuBarExtra {
-            MenuBarContent(model: AppModel.shared)
-        } label: {
-            MenuBarLabel(model: AppModel.shared)
+        MainActor.assumeIsolated {
+            let app = NSApplication.shared
+            let delegate = AppDelegate()
+            app.setActivationPolicy(.regular)
+            app.delegate = delegate
+            withExtendedLifetime(delegate) { app.run() }
         }
-        .menuBarExtraStyle(.menu)
     }
 }
 
+/// A regular Dock app: one main window plus the standard menu bar.
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    func applicationDidFinishLaunching(_ notification: Notification) {
+    private let menus = AppMenus()
+
+    func applicationWillFinishLaunching(_ notification: Notification) {
         NSApp.appearance = NSAppearance(named: .darkAqua)
+        UserDefaults.standard.set(false, forKey: "NSFullScreenMenuItemEverywhere") // no windows go full screen
+        NSApp.mainMenu = menus.makeMainMenu()
+    }
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
         let model = AppModel.shared
         WindowManager.shared.showPanel()
         model.bootstrap()
@@ -41,7 +42,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 
-    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
+    func applicationDockMenu(_ sender: NSApplication) -> NSMenu? { menus.makeDockMenu() }
+
+    /// Closing the last window quits, like any single-window Mac app, unless a recording is running.
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        !AppModel.shared.isRecording
+    }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         let model = AppModel.shared
@@ -51,48 +57,5 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             NSApp.reply(toApplicationShouldTerminate: true)
         }
         return .terminateLater
-    }
-}
-
-struct MenuBarLabel: View {
-    @Bindable var model: AppModel
-    var body: some View {
-        if model.isRecording {
-            HStack(spacing: 4) {
-                Image(systemName: model.isPaused ? "pause.circle.fill" : "record.circle.fill")
-                Text(RecordButton.format(model.elapsed)).monospacedDigit()
-            }
-        } else {
-            Image(systemName: "rectangle.inset.bottomright.filled")
-        }
-    }
-}
-
-struct MenuBarContent: View {
-    @Bindable var model: AppModel
-
-    var body: some View {
-        Button(model.isRecording ? "Stop Recording   ⌃⌥R" : "Start Recording   ⌃⌥R") { model.toggleRecording() }
-        if model.isRecording {
-            Button(model.isPaused ? "Resume   ⌃⌥P" : "Pause   ⌃⌥P") { model.togglePause() }
-        }
-        Divider()
-        ForEach(LayoutMode.allCases) { m in
-            Button {
-                model.setMode(m)
-            } label: {
-                if model.mode == m {
-                    Label("\(m.title)   ⌃⌥\(m.hotkeyNumber)", systemImage: "checkmark")
-                } else {
-                    Text("\(m.title)   ⌃⌥\(m.hotkeyNumber)")
-                }
-            }
-        }
-        Divider()
-        Button(model.previewVisible ? "Hide Preview   ⌃⌥V" : "Show Preview   ⌃⌥V") { model.previewVisible.toggle() }
-        Button("Show Inset") { WindowManager.shared.showPanel() }
-        Button("Recordings") { model.openFolder() }
-        Divider()
-        Button("Quit Inset") { NSApp.terminate(nil) }
     }
 }

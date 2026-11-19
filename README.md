@@ -22,7 +22,7 @@
 - **Audio:** microphone and/or system audio, each with its own on/off switch, a choice of input device and a level meter. Both are mixed into one track so every player plays them.
 - **Any camera:** built-in, USB or Continuity Camera (your iPhone). Shape options: circle, square or rectangle, with adjustable corners, shadow, border and mirroring.
 - **Send to iPhone:** AirDrop the finished recording; it lands straight in the iPhone's Photos app. You can also add it to Photos on the Mac (with iCloud Photos on, it syncs to the phone), save a copy, or share it.
-- **Global hotkeys** that work from any app, plus a menu bar control.
+- **Global hotkeys** that work from any app. The same shortcuts are listed in the app's menus, and the Dock icon shows the running time while you record.
 - **Light on resources:** hardware HEVC/H.264 encoding, zero-copy GPU compositing (under 1 ms per 1080p frame on an M-series chip), and screen capture at only the resolution the output needs. Nothing runs while the preview is closed and you are not recording.
 
 <p align="center">
@@ -38,6 +38,8 @@
 | <kbd>⌃⌥R</kbd> | Start / stop recording |
 | <kbd>⌃⌥P</kbd> | Pause / resume |
 | <kbd>⌃⌥V</kbd> | Show / hide preview |
+| <kbd>⌘O</kbd> | Open a past recording to send or share it |
+| <kbd>⌘,</kbd> | Output settings |
 
 ## Build & install
 
@@ -79,7 +81,7 @@ SCStream audio ───┘─────────────────�
 | `Sources/Inset/Render` | layout maths, transition animator, Metal shaders and compositor, render loop |
 | `Sources/Inset/Recording` | real-time encoder with pause support, audio mixdown |
 | `Sources/Inset/UI` | SwiftUI control panel, AppKit preview window, export window |
-| `Sources/Inset/App` | app model, pipeline orchestration, hotkeys, menu bar |
+| `Sources/Inset/App` | app model, pipeline orchestration, hotkeys, menus |
 
 ## Self-test
 

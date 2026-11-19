@@ -3,7 +3,6 @@ import SwiftUI
 
 struct ControlPanel: View {
     @Bindable var model: AppModel
-    @State private var showSettings = false
 
     var body: some View {
         VStack(spacing: 12) {
@@ -51,7 +50,7 @@ struct ControlPanel: View {
                 .foregroundStyle(.white.opacity(0.9))
                 .transition(.opacity)
             }
-            Button { showSettings.toggle() } label: {
+            Button { model.settingsShown.toggle() } label: {
                 HStack(spacing: 4) {
                     Text("\(model.resolution.label) · \(model.fps)")
                     Image(systemName: "slider.horizontal.3")
@@ -64,7 +63,7 @@ struct ControlPanel: View {
             }
             .buttonStyle(.plain)
             .help("Output")
-            .popover(isPresented: $showSettings, arrowEdge: .bottom) { OutputSettings(model: model) }
+            .popover(isPresented: $model.settingsShown, arrowEdge: .bottom) { OutputSettings(model: model) }
         }
         .frame(height: 22)
     }

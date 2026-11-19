@@ -132,6 +132,7 @@ final class AppModel {
     var elapsed: TimeInterval = 0
     var micLevel: Float = 0
     var toast: String?
+    var settingsShown = false
     var liveScreenAspect: CGFloat?
     var cameraAspect: CGFloat = 16 / 9
     private(set) var recordingCanvas: CGSize?
@@ -314,6 +315,7 @@ final class AppModel {
                 MainActor.assumeIsolated {
                     guard let self, let rec = self.studio?.recorder else { return }
                     self.elapsed = rec.duration
+                    self.updateDockBadge()
                 }
             }
         } catch {
@@ -331,6 +333,7 @@ final class AppModel {
         isPaused = false
         elapsedTimer?.invalidate()
         elapsedTimer = nil
+        updateDockBadge()
         do {
             let url = try await studio.stopRecording()
             if openExportAfterRecording { WindowManager.shared.showExport(url) } else { show("Saved") }
@@ -340,6 +343,12 @@ final class AppModel {
         isFinishing = false
         recordingCanvas = nil
         schedulePipeline()
+    }
+
+    /// The Dock icon shows the running time while recording.
+    private func updateDockBadge() {
+        let label = isRecording ? RecordButton.format(elapsed) : nil
+        if NSApp.dockTile.badgeLabel != label { NSApp.dockTile.badgeLabel = label }
     }
 
     func chooseFolder() {

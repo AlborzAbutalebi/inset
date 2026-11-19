@@ -24,6 +24,7 @@ final class WindowManager: NSObject, NSWindowDelegate {
             w.isOpaque = false
             w.contentView = hosting
             w.isReleasedWhenClosed = false
+            w.isExcludedFromWindowsMenu = true // listed as Window ▸ Inset ⌘0 instead
             w.collectionBehavior = [.fullScreenAuxiliary]
             w.setFrameAutosaveName("InsetPanel")
             if !w.setFrameUsingName("InsetPanel") { w.center() }
